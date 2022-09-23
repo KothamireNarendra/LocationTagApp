@@ -1,8 +1,11 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class,
+    ExperimentalLifecycleComposeApi::class
+)
 
 package com.example.tagpropertyapp.presentation.tag_property
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -12,7 +15,10 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.tagpropertyapp.presentation.theme.LocationTagAppTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,54 +40,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainScreen(viewModel)
+                    TagPropertyScreen(viewModel)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MainScreen(viewModel: TagPropertyViewModel) {
-    val uiState = viewModel.tagPropertyUIStateFlow.value
-    val bottomSheetValue = if(uiState.isMarkerAdded) BottomSheetValue.Expanded else BottomSheetValue.Collapsed
-
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberBottomSheetScaffoldState(
-        bottomSheetState = BottomSheetState(bottomSheetValue)
-    )
-
-    val addMarker = remember {
-        mutableStateOf(false)
-    }
-
-    BackHandler {
-        scope.launch {
-            addMarker.value = false
-            sheetState.bottomSheetState.collapse()
-        }
-    }
-
-    BottomSheetScaffold(
-        scaffoldState = sheetState,
-        sheetContent = {
-            BottomSheet(viewModel = viewModel)
-        },
-        sheetBackgroundColor = Color.Transparent,
-        sheetElevation = 0.dp,
-        sheetGesturesEnabled = false,
-        sheetPeekHeight = 38.dp,
-        modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            FAB(
-                sheetState = sheetState,
-                viewModel = viewModel
-            )
-        }
-    ) {
-        MapScreen(
-            viewModel = viewModel
-        )
     }
 }
 

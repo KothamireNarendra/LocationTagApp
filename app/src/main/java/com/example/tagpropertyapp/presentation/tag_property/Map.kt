@@ -2,6 +2,9 @@
 
 package com.example.tagpropertyapp.presentation.tag_property
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -9,11 +12,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
@@ -23,9 +28,9 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 
 @Composable
-fun MapScreen(viewModel: TagPropertyViewModel) {
+fun Map(viewModel: TagPropertyViewModel) {
     val uiState = viewModel.tagPropertyUIStateFlow.collectAsStateWithLifecycle()
-    MapScreen(
+    Map(
         uiState = uiState.value,
         onLatLngChange = {
             viewModel.onPropertyCoordinatesChange(it)
@@ -34,13 +39,13 @@ fun MapScreen(viewModel: TagPropertyViewModel) {
 }
 
 @Composable
-internal fun MapScreen(
+internal fun Map(
     uiState: TagPropertyUIState,
     onLatLngChange: (latLng: LatLng) -> Unit
 ) {
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(uiState.markerPosition, 20f)
+        position = CameraPosition.fromLatLngZoom(uiState.markerPosition, 90f)
     }
     val properties = remember {
         mutableStateOf(MapProperties(mapType = MapType.SATELLITE))
@@ -52,9 +57,21 @@ internal fun MapScreen(
 
     uiSettings.value = uiSettings.value.copy(scrollGesturesEnabled = !uiState.isMarkerAdded)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val yPos: Float by animateFloatAsState(
+        targetValue = if(uiState.isMarkerAdded) -250f else 0f,
+        animationSpec = tween(300, easing = LinearOutSlowInEasing)
+    )
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .graphicsLayer {
+            translationY = yPos
+        }
+    ) {
         GoogleMap(
-            modifier = Modifier.fillMaxSize().testTag("map"),
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("map"),
             properties = properties.value,
             uiSettings = uiSettings.value,
             cameraPositionState = cameraPositionState

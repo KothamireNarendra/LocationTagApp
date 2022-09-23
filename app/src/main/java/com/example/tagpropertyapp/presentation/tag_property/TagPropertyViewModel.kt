@@ -2,6 +2,7 @@ package com.example.tagpropertyapp.presentation.tag_property
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tagpropertyapp.common.DEFAULT_LOCATION
 import com.example.tagpropertyapp.di.qualifier.IODispatcher
 import com.example.tagpropertyapp.domain.model.Property
 import com.example.tagpropertyapp.domain.usecase.SavePropertyUseCase
@@ -20,8 +21,9 @@ class TagPropertyViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val propertyNameFlow = MutableStateFlow("")
-    private val propertyCoordinatesFlow = MutableStateFlow(LatLng(20.5937, 78.9629))
+    private val propertyCoordinatesFlow = MutableStateFlow(DEFAULT_LOCATION)
     private val addMarkerFlow = MutableStateFlow(false)
+    private val propertySavedFlow = MutableStateFlow(false)
 
     fun onPropertyNameChange(propertyName: String) {
         propertyNameFlow.value = propertyName
@@ -37,6 +39,7 @@ class TagPropertyViewModel @Inject constructor(
 
     fun reset(){
         addMarkerFlow.value = false
+        propertySavedFlow.value = false
         propertyNameFlow.value = ""
     }
 
@@ -44,12 +47,14 @@ class TagPropertyViewModel @Inject constructor(
         combine(
             propertyNameFlow,
             propertyCoordinatesFlow,
-            addMarkerFlow
-        ) { propertyName, propertyCoordinates, addMarker ->
+            addMarkerFlow,
+            propertySavedFlow
+        ) { propertyName, propertyCoordinates, addMarker, propertySaved ->
             TagPropertyUIState(
                 propertyName = propertyName,
                 markerPosition = propertyCoordinates,
-                isMarkerAdded = addMarker
+                isMarkerAdded = addMarker,
+                isPropertySaved = propertySaved
             )
         }.stateIn(
             initialValue = TagPropertyUIState.INITIAL_STATE,
@@ -69,6 +74,7 @@ class TagPropertyViewModel @Inject constructor(
                     )
                 )
             }
+            propertySavedFlow.value = true
         }
     }
 }

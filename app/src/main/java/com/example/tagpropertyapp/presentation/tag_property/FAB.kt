@@ -26,12 +26,8 @@ fun FAB(
     FAB(
         sheetState = sheetState,
         uiState = uiState.value,
-        addMarker = {
-            viewModel.addMarker()
-        },
-        removeMarker = {
-            viewModel.reset()
-        }
+        addMarker = viewModel::addMarker,
+        removeMarker = viewModel::reset
     )
 }
 
